@@ -294,7 +294,7 @@ var AUD={};D.auditoria.forEach(function(a){AUD[a.id]=a});
 var COSTO={};PROPS.forEach(function(p){COSTO[p.id]=p.total_esperado_pp});
 var NOM={};PROPS.forEach(function(p){NOM[p.id]=p.nombre});
 var CONF={galapagos:"media",rep_dominicana:"media",egipto:"media",alemania:"baja",brasil:"media",singapur_bali:"baja",bali:"media",china:"baja",japon:"media",corea:"media",tanzania:"baja",maldivas:"baja"};
-var TABS=[["inicio","Inicio"],["costos","Costos"],["duracion","Duración"],["propuestas","Propuestas"],["checklist","Checklist"],["acuerdos","Acuerdos"],["fuentes","Fuentes"],["cuestionario","Cuestionario"],["resultado","Mi resultado"],["votacion","Votación"],["etapa1","Resultado etapa 1"],["grupal","Vista grupal"],["metodo","Método"]];
+var TABS=[["inicio","Inicio"],["costos","Costos"],["duracion","Duración"],["propuestas","Propuestas"],["checklist","Checklist"],["acuerdos","Acuerdos"],["fuentes","Fuentes"],["cuestionario","Cuestionario"],["resultado","Mi resultado"],["votacion","Votación"],["etapa1","Resultado etapa 1"],["etapa2","Resultado etapa 2"],["grupal","Vista grupal"],["metodo","Método"]];
 var S={cod:{},tab:"inicio",orden:{col:"esp",dir:1},unidad:"pp",esc:"esp",abierto:null,chkGrupo:"todos",chkSel:null,simDias:10,q:{},gasto:{},persona:{seudonimo:"",gasto_comodo:"",gasto_maximo:"",dias:"",meses:[],incompatibles:[],nominal:false},v1:{top5:["","","","",""],inc:[]},v2:{fin:["","","","",""],cat:{},cond:{}},grupal:{files:[],demo:false,cerrado:false},acFiltro:"todos"};
 try{var g=localStorage.getItem("twf27");if(g){var o=JSON.parse(g);["q","gasto","persona","v1","v2"].forEach(function(k){if(o[k])S[k]=o[k]});while(S.v2.fin.length<NFIN)S.v2.fin.push("")}}catch(e){}
 function guardar(){try{localStorage.setItem("twf27",JSON.stringify({q:S.q,gasto:S.gasto,persona:S.persona,v1:S.v1,v2:S.v2}))}catch(e){}}
@@ -589,6 +589,29 @@ function vEtapa1(){
  '<p class="small muted">Una persona marcó una restricción confirmada para Brasil. Mientras no se verifique con evidencia no excluye a Brasil de la etapa 1; si es real, esa persona la marca como incompatible en la etapa 2 y el resultado lo refleja. Japón y Tanzania están separadas por 1 punto.</p>'+
  '<h3>Detalle de los 6 votos</h3>'+det+
  '<h3>Siguiente paso</h3><p class="small">Etapa 2: cada persona clasifica las finalistas como favorita, aceptable, aceptable con condiciones o incompatible por restricción confirmada. Antes se actualizan costos y viabilidad. Es otro formulario anónimo, también con una respuesta por cuenta de Google.</p>'+(FORM2_URL?'<p><a class="p" style="display:inline-block;padding:10px 14px;border-radius:8px;text-decoration:none;background:var(--brand);color:var(--brand-ink)" href="'+esc(FORM2_URL)+'" target="_blank" rel="noopener">Abrir el formulario de la etapa 2</a></p>':'')+''}
+// ---------- Resultado etapa 2 (votos anónimos del formulario, 13 nov 2026) ----------
+var FIN2=["japon","tanzania","egipto","maldivas","brasil"];
+function _v2(id,fav,a){var c={};FIN2.forEach(function(f,i){c[f]=a[i]});c[fav]="favorita";return {id:id,cat:c}}
+var VOTOS_E2=[
+_v2("Voto A","tanzania",["aceptable","aceptable","aceptable","aceptable","condiciones"]),
+_v2("Voto B","japon",["aceptable","aceptable","condiciones","condiciones","aceptable"]),
+_v2("Voto C","tanzania",["aceptable","aceptable","condiciones","aceptable","aceptable"]),
+_v2("Voto D","egipto",["condiciones","condiciones","aceptable","condiciones","condiciones"]),
+_v2("Voto E","tanzania",["aceptable","aceptable","aceptable","aceptable","aceptable"]),
+_v2("Voto F","egipto",["condiciones","incompatible","aceptable","incompatible","condiciones"])];
+function vEtapa2(){
+ var r=M.etapa2(VOTOS_E2,FIN2,{costo:COSTO});
+ var E={favorita:"Favorita",aceptable:"Aceptable",condiciones:"Con condiciones",incompatible:"Incompatible"};
+ var tab='<div class="tw"><table><thead><tr><th class="first">Finalista</th><th class="n">Puntos</th><th class="n">Favoritas</th><th class="n">Con condiciones</th><th class="n">Incompatibles</th></tr></thead><tbody>'+r.tabla.map(function(f){return '<tr><td class="first">'+(f.id===r.ganadora?"<b>":"")+esc(NOM[f.id])+(f.id===r.ganadora?"</b>":"")+'</td><td class="n">'+f.puntos+'</td><td class="n">'+f.favoritas+'</td><td class="n">'+f.condiciones.length+'</td><td class="n">'+f.incompatibles.length+'</td></tr>'}).join("")+'</tbody></table></div>';
+ var det='<div class="tw"><table><thead><tr><th class="first">Voto</th>'+FIN2.map(function(f){return '<th>'+esc(NOM[f].split(" (")[0])+'</th>'}).join("")+'</tr></thead><tbody>'+VOTOS_E2.map(function(v){return '<tr><td class="first"><b>'+v.id+'</b></td>'+FIN2.map(function(f){return '<td class="small">'+E[v.cat[f]]+'</td>'}).join("")+'</tr>'}).join("")+'</tbody></table></div>';
+ return '<h2>Resultado de la etapa 2</h2>'+nota('Votaron las 6 personas, de forma anónima. Favorita 3 puntos, aceptable 2, con condiciones 1; una incompatibilidad confirmada excluye esa opción.','ok')+
+ '<h3>Puntos por finalista</h3>'+tab+
+ nota('<b>Estado según el método: '+esc(r.estado)+'.</b> Opción más votada sin incompatibilidades: <b>'+esc(NOM[r.ganadora])+'</b>. No es consenso hasta resolver las condiciones y recalcular.','warn')+
+ '<h3>Lo que decide el resultado</h3><p class="small"><b>Tanzania y Zanzíbar y Egipto + Mar Rojo empatan con 12 puntos.</b> Tanzania tiene más favoritas (3 contra 2), pero una persona la marcó como incompatible (también marcó así a Maldivas) y, por la regla, eso la saca de la comparación. Egipto queda como la más votada sin incompatibilidades.</p>'+
+ '<p class="small">La regla exige que una incompatibilidad sea una <b>restricción confirmada</b> (visa, salud, trabajo, algo objetivo); una preocupación o preferencia en contra no excluye. En los comentarios de esa persona aparece la seguridad como motivo. <b>Antes de dar el resultado por cerrado hay que verificar con esa persona si es una restricción real.</b> Si lo es, el resultado es Egipto con condiciones. Si es una preocupación, no excluye y Tanzania pasa al primer lugar por tener más favoritas, también con condiciones.</p>'+
+ '<h3>Condiciones y comentarios (sin nombres)</h3><ul class="small"><li><b>Seguridad:</b> mencionada para Egipto (dos personas: una la pone como condición y dice que se podría potenciar con presupuesto; otra habla de caos, higiene y riesgo de enfermarse), para Tanzania y para Maldivas.</li><li><b>Costo de Maldivas:</b> una persona pide que no supere USD 5.000 por persona (hoy el total esperado es USD '+Math.round(COSTO.maldivas).toLocaleString("es-EC")+').</li><li><b>Brasil:</b> una persona dice que cuesta lo mismo que viajes más interesantes, por lo que le resta.</li></ul>'+
+ '<h3>Detalle de los 6 votos</h3>'+det+
+ '<p class="small muted">Las letras solo identifican filas; no siguen el orden de llegada. Los comentarios están agrupados a propósito sin indicar quién los escribió.</p>'}
 // ---------- Método ----------
 function vMetodo(){
  var dims=M.DIMS.map(function(d){return '<tr><td>'+esc(d.nombre)+'</td><td>'+(d.tipo==="demanda"?"exigencia (penaliza solo si el viaje exige más de lo que toleras)":"gusto (penaliza la diferencia en cualquier sentido)")+'</td></tr>'}).join("");
@@ -630,7 +653,7 @@ function demoDatos(){
  var proms=files.map(function(x){return sha(JSON.stringify(x.cuerpo)).then(function(h){x.hash=h;x.hashOk=true})});
  Promise.all(proms).then(function(){S.grupal.files=files;S.grupal.demo=true;S.grupal.cerrado=false;render()})}
 // ---------- Render y eventos ----------
-var VISTAS={inicio:vInicio,costos:vCostos,duracion:vDuracion,propuestas:vPropuestas,checklist:vChecklist,acuerdos:vAcuerdos,fuentes:vFuentes,cuestionario:vCuestionario,resultado:vResultado,votacion:vVotacion,etapa1:vEtapa1,grupal:vGrupal,metodo:vMetodo};
+var VISTAS={inicio:vInicio,costos:vCostos,duracion:vDuracion,propuestas:vPropuestas,checklist:vChecklist,acuerdos:vAcuerdos,fuentes:vFuentes,cuestionario:vCuestionario,resultado:vResultado,votacion:vVotacion,etapa1:vEtapa1,etapa2:vEtapa2,grupal:vGrupal,metodo:vMetodo};
 function render(){renderNav();var y=window.scrollY,ab=[];document.querySelectorAll("#main details[open]").forEach(function(d){ab.push(d.querySelector("summary").textContent)});
  $("#main").innerHTML=VISTAS[S.tab]();
  document.querySelectorAll("#main details").forEach(function(d){if(ab.indexOf(d.querySelector("summary").textContent)>=0)d.open=true});
