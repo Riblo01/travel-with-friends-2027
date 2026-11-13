@@ -513,7 +513,7 @@ function procesarCodigos(texto){
   if(item.cuerpo){sha(JSON.stringify(item.cuerpo)).then(function(h){item.hash=h;item.hashOk=!item.hashDeclarado||item.hashDeclarado===h;if(!item.hashOk)item.errores=["el código fue modificado (no coincide la verificación)"];fin()})}else fin()})}
 function parseCSV(t){var rows=[],row=[],f="",q=false,i=0;t=String(t).replace(/^\ufeff/,"");for(;i<t.length;i++){var c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}else if(c==='"')q=true;else if(c===","){row.push(f);f=""}else if(c==="\n"||c==="\r"){if(c==="\r"&&t[i+1]==="\n")i++;row.push(f);f="";if(row.length>1||row[0]!=="")rows.push(row);row=[]}else f+=c}if(f!==""||row.length){row.push(f);rows.push(row)}return rows}
 function importarCSV2(rows){
- var H=rows[0],gc=[],cc=-1,fc=-1;H.forEach(function(h,i){var m=h.match(/\[(.+)\]\s*$/);if(m&&NOMFORM[m[1].trim()]&&h.indexOf("Clasifica las demás finalistas")===0)gc.push({i:i,id:NOMFORM[m[1].trim()]});if(h.indexOf("Si marcaste")===0)cc=i;if(h.indexOf("¿Cuál es tu favorita")===0)fc=i});
+ var H=rows[0],gc=[],cc=-1,fc=-1;H.forEach(function(h,i){var m=h.match(/\[(.+)\]\s*$/);if(m&&NOMFORM[m[1].trim()]&&h.indexOf("Clasifica las ")===0)gc.push({i:i,id:NOMFORM[m[1].trim()]});if(h.indexOf("Si marcaste")===0)cc=i;if(h.indexOf("¿Cuál es tu favorita")===0)fc=i});
  if(fc<0){alert("No encuentro la pregunta \"¿Cuál es tu favorita?\" en el CSV. Descarga el CSV del formulario de la etapa 2 actual.");return}
  if(gc.length!==NFIN){alert("En el formulario de la etapa 2 las filas deben ser los nombres de las "+NFIN+" finalistas (encontré "+gc.length+"). Descarga de nuevo el CSV del formulario de la etapa 2.");return}
  var CAT={"Aceptable":"aceptable","Aceptable con condiciones":"condiciones","Incompatible por restricción confirmada":"incompatible"};
@@ -526,7 +526,7 @@ function importarCSV2(rows){
   sha(JSON.stringify(item.cuerpo)).then(function(h){item.hash=h;out.push(item);if(--pend===0){out.sort(function(a,b){return a.nombre<b.nombre?-1:1});S.grupal.files=S.grupal.files.filter(function(x){return x.tipo!=="voto2"||x.nombre.indexOf("formulario")!==0}).concat(out);S.grupal.demo=false;render()}})})}
 function importarCSV(texto){
  var rows=parseCSV(texto);if(rows.length<2){alert("El archivo no tiene respuestas");return}
- if(rows[0].some(function(h){return h.indexOf("Clasifica las demás finalistas")===0})){importarCSV2(rows);return}
+ if(rows[0].some(function(h){return h.indexOf("Clasifica las ")===0})){importarCSV2(rows);return}
  var H=rows[0],gc=[],cc=-1;H.forEach(function(h,i){var m=h.match(/\[(.+)\]\s*$/);if(m&&NOMFORM[m[1].trim()]&&h.indexOf("Tus 5")===0)gc.push({i:i,id:NOMFORM[m[1].trim()]});if(h.indexOf("Marca solo")===0)cc=i});
  if(gc.length!==12){alert("No reconozco las columnas del formulario (encontré "+gc.length+" de 12 propuestas). Descarga el CSV de la hoja de respuestas de este formulario.");return}
  var out=[],pend=rows.length-1;
