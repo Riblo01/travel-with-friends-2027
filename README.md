@@ -8,4 +8,4 @@ Abre la página (GitHub Pages) o el archivo `index.html`. Todo corre en tu naveg
 - El índice de afinidad no es una probabilidad de satisfacción ni una prueba psicológica validada.
 - Esta página no hace reservas ni pagos.
 
-Cómo votar: responde el cuestionario, toca *Copiar mi voto* y pega el código en un mensaje privado a quien administre. El administrador pega los códigos en la pestaña *Vista grupal*. Cada persona decide si su voto se muestra con su nombre.
+Cómo votar: abre la pestaña *Votación* y toca *Abrir el formulario de votación* (Google; anónimo y una vez por cuenta). Quien administre carga las respuestas en la pestaña *Vista grupal*, que funciona en su navegador.
